@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Alumni Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f9;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    .chat-box {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+    }
+
+    .message.user p {
+      text-align: right;
+      background-color: #0084ff;
+      color: white;
+      padding: 10px;
+      border-radius: 15px;
+      display: inline-block;
+    }
+
+    .message.bot p {
+      text-align: left;
+      background-color: #e5e5ea;
+      color: black;
+      padding: 10px;
+      border-radius: 15px;
+      display: inline-block;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .query-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .keyword {
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .query-input {
+      width: 150px;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #0084ff;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #006edc;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎓 Alumni Query Chat</h1>
+
+  <div class="chat-box" id="chat"></div>
+
+  <form id="queryForm">
+    <div class="query-row">
+      <span class="keyword">name</span>
+      <input type="text" id="nameInput" class="query-input" placeholder="eg:karthik">
+
+      <span class="keyword">company</span>
+      <input type="text" id="companyInput" class="query-input" placeholder="eg:tcs">
+      
+      <span class="keyword">sector</span>
+      <input type="text" id="sectorInput" class="query-input" placeholder="eg:design/marketing">
+      
+      <span class="keyword">worked_in</span>
+      <input type="text" id="worked_inInput" class="query-input" placeholder="company name">
+
+      <span class="keyword">batch</span>
+      <input type="text" id="batchInput" class="query-input" placeholder="eg:2025">
+      
+      <span class="keyword">city</span>
+      <input type="text" id="cityInput" class="query-input" placeholder="eg:madurai">
+      
+      <span class="keyword">country</span>
+      <input type="text" id="countryInput" class="query-input" placeholder="eg:India">
+      
+      <span class="keyword">designation</span>
+      <input type="text" id="designationInput" class="query-input" placeholder="eg:ceo">
+      
+      <span class="keyword">studied_in</span>
+      <input type="text" id="studied_inInput" class="query-input" placeholder="eg:IIT/PSG/SSN">
+      
+      <span class="keyword">department</span>
+      <input type="text" id="departmentInput" class="query-input" placeholder="eg:mechanical"> 
+      
+      <span class="keyword">course</span>
+      <input type="text" id="courseInput" class="query-input" placeholder="eg:b.e">
+      
+    </div>
+
+    <button type="submit">Search</button>
+  </form>
+
+  <script>
+    const chatBox = document.getElementById("chat");
+    const form = document.getElementById("queryForm");
+
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfCBysRBQtWhh3J0fR_SSC-gJNPMG1EG58Ckg2yi17SLIbjnugBk2CpNprxiT59Q-KRw/exec";
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("nameInput").value.trim();
+      const company = document.getElementById("companyInput").value.trim();
+      const sector = document.getElementById("sectorInput").value.trim();
+      const worked_in = document.getElementById("worked_inInput").value.trim();
+      const batch = document.getElementById("batchInput").value.trim();
+      const city = document.getElementById("cityInput").value.trim();
+      const country = document.getElementById("countryInput").value.trim();
+      const designation = document.getElementById("designationInput").value.trim();
+      const studied_in = document.getElementById("studied_inInput").value.trim();
+      const department = document.getElementById("departmentInput").value.trim();
+      const course = document.getElementById("courseInput").value.trim();
+
+      let query = "";
+      if (name) query += `name ${name} `;
+      if (company) query += `company ${company} `;
+      if (sector) query += `sector ${sector} `;
+      if (worked_in) query += `worked_in ${worked_in} `;
+      if (batch) query += `batch ${batch} `;
+      if (city) query += `city ${city} `;
+      if (country) query += `country ${country} `;
+      if (designation) query += `designation ${designation} `;
+      if (studied_in) query += `studied_in ${studied_in} `;
+      if (department) query += `department ${department} `;
+      if (course) query += `course ${course} `;
+      query = query.trim();
+
+      if (!query) return;
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "message user";
+      userMsg.innerHTML = `<p>${query}</p>`;
+      chatBox.appendChild(userMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      fetch(`${WEB_APP_URL}?q=${encodeURIComponent(query)}`)
+        .then(res => res.text())
+        .then(data => {
+          const botMsg = document.createElement("div");
+          botMsg.className = "message bot";
+          botMsg.innerHTML = `<p>${data.replace(/\n/g, "<br>")}</p>`;
+          chatBox.appendChild(botMsg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        })
+        .catch(err => {
+          const errMsg = document.createElement("div");
+          errMsg.className = "message bot";
+          errMsg.innerHTML = `<p>Error: ${err.message}</p>`;
+          chatBox.appendChild(errMsg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+      form.reset(); // optional: clears form inputs after submission
+    });
+  </script>
+</body>
+</html>
