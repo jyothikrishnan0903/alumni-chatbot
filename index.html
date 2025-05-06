@@ -90,6 +90,14 @@
     button:hover {
       background-color: #006edc;
     }
+
+    #downloadBtn {
+      background-color: #28a745;
+    }
+
+    #downloadBtn:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
@@ -104,44 +112,49 @@
 
       <span class="keyword">company</span>
       <input type="text" id="companyInput" class="query-input" placeholder="eg:tcs">
-      
+
       <span class="keyword">sector</span>
       <input type="text" id="sectorInput" class="query-input" placeholder="eg:design/marketing">
-      
+
       <span class="keyword">worked_in</span>
       <input type="text" id="worked_inInput" class="query-input" placeholder="company name">
 
       <span class="keyword">batch</span>
       <input type="text" id="batchInput" class="query-input" placeholder="eg:2025">
-      
+
       <span class="keyword">city</span>
       <input type="text" id="cityInput" class="query-input" placeholder="eg:madurai">
-      
+
       <span class="keyword">country</span>
       <input type="text" id="countryInput" class="query-input" placeholder="eg:India">
-      
+
       <span class="keyword">designation</span>
       <input type="text" id="designationInput" class="query-input" placeholder="eg:ceo">
-      
+
       <span class="keyword">studied_in</span>
       <input type="text" id="studied_inInput" class="query-input" placeholder="eg:IIT/PSG/SSN">
-      
+
       <span class="keyword">department</span>
       <input type="text" id="departmentInput" class="query-input" placeholder="eg:mechanical"> 
-      
+
       <span class="keyword">course</span>
       <input type="text" id="courseInput" class="query-input" placeholder="eg:b.e">
-      
     </div>
 
     <button type="submit">Search</button>
   </form>
 
+  <br>
+  <button id="downloadBtn">⬇️ Download Response</button>
+
   <script>
     const chatBox = document.getElementById("chat");
     const form = document.getElementById("queryForm");
+    const downloadBtn = document.getElementById("downloadBtn");
 
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfCBysRBQtWhh3J0fR_SSC-gJNPMG1EG58Ckg2yi17SLIbjnugBk2CpNprxiT59Q-KRw/exec";
+
+    let lastBotResponse = "";
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -183,6 +196,7 @@
       fetch(`${WEB_APP_URL}?q=${encodeURIComponent(query)}`)
         .then(res => res.text())
         .then(data => {
+          lastBotResponse = data;
           const botMsg = document.createElement("div");
           botMsg.className = "message bot";
           botMsg.innerHTML = `<p>${data.replace(/\n/g, "<br>")}</p>`;
@@ -197,7 +211,21 @@
           chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-      form.reset(); // optional: clears form inputs after submission
+      form.reset(); // clears form inputs after submission
+    });
+
+    downloadBtn.addEventListener("click", () => {
+      if (!lastBotResponse) {
+        alert("No response to download yet!");
+        return;
+      }
+      const blob = new Blob([lastBotResponse], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "alumni_response.txt";
+      link.click();
+      URL.revokeObjectURL(url);
     });
   </script>
 </body>
