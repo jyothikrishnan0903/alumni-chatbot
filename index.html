@@ -1,190 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Alumni Chatbot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f9;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
     }
 
-    h1 {
-      margin-bottom: 20px;
+    .chat-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 20px;
     }
 
     .chat-box {
-      width: 90%;
-      max-width: 800px;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
       max-height: 400px;
       overflow-y: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ddd;
     }
 
     .message {
-      margin-bottom: 10px;
+      margin: 10px 0;
     }
 
-    .message.user p {
+    .message.user {
       text-align: right;
-      background-color: #0084ff;
-      color: white;
-      padding: 10px;
-      border-radius: 15px;
-      display: inline-block;
+      color: blue;
     }
 
-    .message.bot p {
+    .message.bot {
       text-align: left;
-      background-color: #e5e5ea;
-      color: black;
-      padding: 10px;
-      border-radius: 15px;
-      display: inline-block;
+      color: green;
     }
 
     form {
       display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 90%;
-      max-width: 800px;
-    }
-
-    .query-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       gap: 10px;
     }
 
-    .keyword {
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
-    .query-input {
-      width: 150px;
-      padding: 5px 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 8px;
     }
 
     button {
-      padding: 10px;
-      background-color: #0084ff;
+      padding: 8px 12px;
+      cursor: pointer;
+      background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 20px;
-      font-size: 16px;
-      cursor: pointer;
+      border-radius: 4px;
     }
 
     button:hover {
-      background-color: #006edc;
+      background-color: #0056b3;
     }
 
-    #downloadBtn {
+    #download-btn {
+      margin-top: 10px;
       background-color: #28a745;
     }
 
-    #downloadBtn:hover {
-      background-color: #218838;
+    #download-btn:hover {
+      background-color: #1e7e34;
     }
   </style>
 </head>
 <body>
-  <h1>🎓 Alumni Query Chat</h1>
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box"></div>
 
-  <div class="chat-box" id="chat"></div>
+    <form id="chat-form">
+      <input type="text" id="query" placeholder="Ask a question..." required />
+      <button type="submit">Send</button>
+    </form>
 
-  <form id="queryForm">
-    <div class="query-row">
-      <span class="keyword">name</span>
-      <input type="text" id="nameInput" class="query-input" placeholder="eg:karthik">
-
-      <span class="keyword">company</span>
-      <input type="text" id="companyInput" class="query-input" placeholder="eg:tcs">
-
-      <span class="keyword">sector</span>
-      <input type="text" id="sectorInput" class="query-input" placeholder="eg:design/marketing">
-
-      <span class="keyword">worked_in</span>
-      <input type="text" id="worked_inInput" class="query-input" placeholder="company name">
-
-      <span class="keyword">batch</span>
-      <input type="text" id="batchInput" class="query-input" placeholder="eg:2025">
-
-      <span class="keyword">city</span>
-      <input type="text" id="cityInput" class="query-input" placeholder="eg:madurai">
-
-      <span class="keyword">country</span>
-      <input type="text" id="countryInput" class="query-input" placeholder="eg:India">
-
-      <span class="keyword">designation</span>
-      <input type="text" id="designationInput" class="query-input" placeholder="eg:ceo">
-
-      <span class="keyword">studied_in</span>
-      <input type="text" id="studied_inInput" class="query-input" placeholder="eg:IIT/PSG/SSN">
-
-      <span class="keyword">department</span>
-      <input type="text" id="departmentInput" class="query-input" placeholder="eg:mechanical"> 
-
-      <span class="keyword">course</span>
-      <input type="text" id="courseInput" class="query-input" placeholder="eg:b.e">
-    </div>
-
-    <button type="submit">Search</button>
-  </form>
-
-  <br>
-  <button id="downloadBtn">⬇️ Download Response</button>
+    <button id="download-btn" onclick="downloadExcel()">Download Excel</button>
+  </div>
 
   <script>
-    const chatBox = document.getElementById("chat");
-    const form = document.getElementById("queryForm");
-    const downloadBtn = document.getElementById("downloadBtn");
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("query");
+    const chatBox = document.getElementById("chat-box");
 
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfCBysRBQtWhh3J0fR_SSC-gJNPMG1EG58Ckg2yi17SLIbjnugBk2CpNprxiT59Q-KRw/exec";
+    // 🔁 Replace with your Google Apps Script web app URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzpwF5hPOza6GuAckm6pPvifd0_bqON6T5MG2zNpWPaVDYy09GAQcuZkFqIDrlDlk7c/exec";
 
-    let lastBotResponse = "";
+    let lastResponseData = "";
+
+    function handleResponse(data) {
+      lastResponseData = data;
+
+      const botMsg = document.createElement("div");
+      botMsg.className = "message bot";
+      botMsg.innerHTML = `<p>${data.replace(/\n/g, "<br>")}</p>`;
+      chatBox.appendChild(botMsg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-
-      const name = document.getElementById("nameInput").value.trim();
-      const company = document.getElementById("companyInput").value.trim();
-      const sector = document.getElementById("sectorInput").value.trim();
-      const worked_in = document.getElementById("worked_inInput").value.trim();
-      const batch = document.getElementById("batchInput").value.trim();
-      const city = document.getElementById("cityInput").value.trim();
-      const country = document.getElementById("countryInput").value.trim();
-      const designation = document.getElementById("designationInput").value.trim();
-      const studied_in = document.getElementById("studied_inInput").value.trim();
-      const department = document.getElementById("departmentInput").value.trim();
-      const course = document.getElementById("courseInput").value.trim();
-
-      let query = "";
-      if (name) query += `name ${name} `;
-      if (company) query += `company ${company} `;
-      if (sector) query += `sector ${sector} `;
-      if (worked_in) query += `worked_in ${worked_in} `;
-      if (batch) query += `batch ${batch} `;
-      if (city) query += `city ${city} `;
-      if (country) query += `country ${country} `;
-      if (designation) query += `designation ${designation} `;
-      if (studied_in) query += `studied_in ${studied_in} `;
-      if (department) query += `department ${department} `;
-      if (course) query += `course ${course} `;
-      query = query.trim();
-
+      const query = input.value.trim();
       if (!query) return;
 
       const userMsg = document.createElement("div");
@@ -196,12 +122,7 @@
       fetch(`${WEB_APP_URL}?q=${encodeURIComponent(query)}`)
         .then(res => res.text())
         .then(data => {
-          lastBotResponse = data;
-          const botMsg = document.createElement("div");
-          botMsg.className = "message bot";
-          botMsg.innerHTML = `<p>${data.replace(/\n/g, "<br>")}</p>`;
-          chatBox.appendChild(botMsg);
-          chatBox.scrollTop = chatBox.scrollHeight;
+          handleResponse(data);
         })
         .catch(err => {
           const errMsg = document.createElement("div");
@@ -211,22 +132,27 @@
           chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-      form.reset(); // clears form inputs after submission
+      form.reset();
     });
 
-    downloadBtn.addEventListener("click", () => {
-      if (!lastBotResponse) {
-        alert("No response to download yet!");
+    function downloadExcel() {
+      if (!lastResponseData) {
+        alert("No data to download yet!");
         return;
       }
-      const blob = new Blob([lastBotResponse], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
+
+      const rows = lastResponseData.trim().split("\n").map(row => row.split("\t"));
+      let csvContent = "data:text/csv;charset=utf-8," 
+        + rows.map(e => e.map(cell => `"${cell}"`).join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
-      link.href = url;
-      link.download = "alumni_response.txt";
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "alumni_results.csv");
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(url);
-    });
+      document.body.removeChild(link);
+    }
   </script>
 </body>
 </html>
